@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>Image To Text Converter</title>
+{% endblock %}
+{% block body %}
+<nav class="navbar navbar-dark bg-dark">
+    <span class="navbar-brand mx-auto h1">Image To Text Converter</span>
+</nav>
+<div class="jumbotron jumbotron-fluid">
+    <div class="container">
+      <h1 class="display-4">The Image you uploaded says:</h1>
+      <p class="lead">{{ text }}</p>
+    </div>
+  </div>
+
+{% endblock %}
