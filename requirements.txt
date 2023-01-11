@@ -2,3 +2,4 @@ pytesseract
 Pillow
 flask
 pandas
+flask_cors==3.0.10
