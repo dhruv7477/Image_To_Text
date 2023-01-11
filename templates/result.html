@@ -11,6 +11,9 @@
     <div class="container">
       <h1 class="display-4">The Image you uploaded says:</h1>
       <p class="lead">{{ text }}</p>
+      <a class="btn btn-outline-secondary" href="{{url_for('download_txt', filename=filename)}}">Download in txt</a>
+      <a class="btn btn-outline-secondary" href="{{url_for('download_word', filename=filename)}}">Download in word</a>
+      <a class="btn btn-outline-secondary" href="{{url_for('download_pdf', filename=filename)}}">Download in PDF</a>
     </div>
   </div>
 
