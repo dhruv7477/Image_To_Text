@@ -1,4 +1,6 @@
+import base64
 import io
+import uuid
 from flask import Flask,request,app,render_template,send_from_directory,make_response
 from flask_cors import CORS,cross_origin
 import pytesseract
@@ -9,7 +11,7 @@ import os
 from docx import Document
 from fpdf import FPDF
 from logger import logging
-
+import sqlite3
 
 
 ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
@@ -40,14 +42,23 @@ def index():
             filename = secure_filename(image.filename)
             if not allowed_file(filename):
                 return 'Invalid file type. Please upload a jpg, jpeg or png file.'
+            
             # Save the file to the server
             UPLOAD_FOLDER = 'uploads'
             app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
             if not os.path.exists(UPLOAD_FOLDER):
                 os.makedirs(UPLOAD_FOLDER)
             image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            
+            # Convert the image to a file-like object
+            image.seek(0)
+            image_file = io.BytesIO(image.read())
             # Open the image file
-            image = Image.open(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            image = Image.open(image_file)
+            # read image data
+            image_data = image_file.getvalue()
+
+            
             # Extract the text from the image
             text = pytesseract.image_to_string(image)
             logging.info(f"The text in the file was {text}")
@@ -55,10 +66,22 @@ def index():
                 f.write(text)
                 f.close()
 
+            # Connect to the SQLite database
+            conn = sqlite3.connect('test.db')
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='images'")
+            if cursor.fetchone() is None:
+                cursor.execute('''CREATE TABLE images (image_id text PRIMARY KEY, image_data blob)''')
+            image_id = str(uuid.uuid4())
+            image_data = base64.b64encode(image_data).decode()
+            cursor.execute("INSERT INTO images (image_id, image_data) VALUES (?, ?)", (image_id, image_data))
+            conn.commit()
+            conn.close()
+
 
             return render_template('result.html', text = text, filename = filename)
         except Exception as e:
-            logging.exception('The Exception message is: ',e)
+            logging.exception(f'The Exception message is: {e}')
             return 'Something is wrong. Check the log files!'
     else:
         return render_template('index.html')
