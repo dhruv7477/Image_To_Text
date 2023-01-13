@@ -10,12 +10,23 @@ from docx import Document
 from fpdf import FPDF
 from logger import logging
 
+
+
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
+
+
 app=Flask(__name__)
 @app.route('/',methods=['GET'])
 @cross_origin()
 def home():
     '''This function will render index.html'''
     return render_template('index.html')
+
+
+def allowed_file(filename):
+    '''This function will verify if the input file is a valid image or not!'''
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/image',methods=['POST','GET']) # route to show the review comments in a web UI
 @cross_origin()
@@ -25,16 +36,18 @@ def index():
         try:
             # Get the file from the form
             image = request.files["image"]
-            logging.info(f"The image name entered was {image} and it was {type(image)}")
-            # Save the file to the server
+            logging.info(f"The image name entered was {image}")
             filename = secure_filename(image.filename)
+            if not allowed_file(filename):
+                return 'Invalid file type. Please upload a jpg, jpeg or png file.'
+            # Save the file to the server
             UPLOAD_FOLDER = 'uploads'
             app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
             if not os.path.exists(UPLOAD_FOLDER):
                 os.makedirs(UPLOAD_FOLDER)
-            image.save("uploads/" + filename)
+            image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             # Open the image file
-            image = Image.open("uploads/" + filename)
+            image = Image.open(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             # Extract the text from the image
             text = pytesseract.image_to_string(image)
             logging.info(f"The text in the file was {text}")
@@ -60,7 +73,9 @@ def download_txt(filename):
         response = make_response(text)
         response.headers["Content-Disposition"] = "attachment; filename=file.txt"
         response.headers["Content-type"] = "text/plain"
+        logging.info("The user downloaded the extracted text in txt format")
         return response
+        
     except Exception as e:
         return str(e)
 
@@ -86,6 +101,7 @@ def download_word(filename):
         # Return the Word document as a downloadable file
         response = make_response(send_from_directory(app.config['UPLOAD_FOLDER'], f'{filename}.docx', as_attachment=True))
         response.headers["Content-Disposition"] = f"attachment; filename={filename}.docx"
+        logging.info("The user downloaded the extracted text in word format")
         return response
 
     except Exception as e:
@@ -105,7 +121,9 @@ def download_pdf(filename):
             pdf.output(f'uploads/{filename}.pdf')
         response = make_response(send_from_directory(app.config['UPLOAD_FOLDER'], f'{filename}.pdf', as_attachment=True))
         response.headers["Content-Disposition"] = f"attachment; filename={filename}.pdf"
+        logging.info("The user downloaded the extracted text in pdf format")
         return response
+
     except Exception as e:
         return str(e)
 
