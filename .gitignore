@@ -131,10 +131,11 @@ dmypy.json
 #VS Code
 .vscode/
 
-#Images
+#Files
 *.png
 *.jpg
 *.jpeg
+*.zip
 
 #Uploads
 uploads/
