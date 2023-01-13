@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 import os
 from docx import Document
 from fpdf import FPDF
+from logger import logging
 
 app=Flask(__name__)
 @app.route('/',methods=['GET'])
@@ -24,6 +25,7 @@ def index():
         try:
             # Get the file from the form
             image = request.files["image"]
+            logging.info(f"The image name entered was {image} and it was {type(image)}")
             # Save the file to the server
             filename = secure_filename(image.filename)
             UPLOAD_FOLDER = 'uploads'
@@ -35,14 +37,16 @@ def index():
             image = Image.open("uploads/" + filename)
             # Extract the text from the image
             text = pytesseract.image_to_string(image)
+            logging.info(f"The text in the file was {text}")
             with open(f'uploads/{filename}.txt', 'w') as f:
                 f.write(text)
                 f.close()
-            
+
+
             return render_template('result.html', text = text, filename = filename)
         except Exception as e:
-            print('The Exception message is: ',e)
-            return 'something is wrong'
+            logging.exception('The Exception message is: ',e)
+            return 'Something is wrong. Check the log files!'
     else:
         return render_template('index.html')
 
