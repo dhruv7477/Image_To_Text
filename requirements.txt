@@ -6,4 +6,3 @@ flask_cors==3.0.10
 python-docx
 fpdf
 gunicorn
-cassandra-driver
