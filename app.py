@@ -81,7 +81,7 @@ def index():
 
             return render_template('result.html', text = text, filename = filename)
         except Exception as e:
-            logging.exception(f'The Exception message is: {e}')
+            logging.exception(f'The Exception message caused by the index function is: {e}')
             return 'Something is wrong. Check the log files!'
     else:
         return render_template('index.html')
@@ -100,7 +100,8 @@ def download_txt(filename):
         return response
         
     except Exception as e:
-        return str(e)
+        logging.exception(f'The Exception message caused by the download_txt function is: {e}')
+        return 'Something is wrong. Check the log files!'
 
 
 @app.route('/download_word/<filename>')
@@ -128,8 +129,8 @@ def download_word(filename):
         return response
 
     except Exception as e:
-        return str(e)
-
+        logging.exception(f'The Exception message caused by the download_word function is: {e}')
+        return 'Something is wrong. Check the log files!'
 
 @app.route('/download_pdf/<filename>')
 def download_pdf(filename):
@@ -148,8 +149,8 @@ def download_pdf(filename):
         return response
 
     except Exception as e:
-        return str(e)
-
+        logging.exception(f'The Exception message caused by the download_pdf function is: {e}')
+        return 'Something is wrong. Check the log files!'
 
 if __name__ == "__main__":
     app.run(debug=True)
