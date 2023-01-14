@@ -30,7 +30,7 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/image',methods=['POST','GET']) # route to show the review comments in a web UI
+@app.route('/image',methods=['POST','GET'])
 @cross_origin()
 def index():
     '''This function will take image as an input and return the text on it by extracting it.'''
